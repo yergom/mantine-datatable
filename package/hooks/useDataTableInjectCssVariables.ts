@@ -1,12 +1,12 @@
 import { RefObject, useEffect } from 'react';
-import { VAR_FOOTER_HEIGHT, VAR_HEADER_HEIGHT } from '../cssVariables';
+import { VAR_FOOTER_HEIGHT, VAR_HEADER_HEIGHT, VAR_SELECTION_COLUMN_WIDTH } from '../cssVariables';
 
 interface UseDataTableInjectCssVariablesOpts {
   root: RefObject<HTMLDivElement | null>;
   table: RefObject<HTMLTableElement | null>;
   header: RefObject<HTMLTableSectionElement | null>;
   footer: RefObject<HTMLTableSectionElement | null>;
-  selectionColumn: RefObject<HTMLTableCellElement | null>;
+  selectionColumnHeader: RefObject<HTMLTableCellElement | null>;
 }
 
 /**
@@ -66,4 +66,15 @@ export function useDataTableInjectCssVariables(opts: UseDataTableInjectCssVariab
       () => setCssVar(opts.root.current, VAR_FOOTER_HEIGHT, "0px")
     );
   }, [opts.footer.current]);
+
+  useEffect(() => {
+    return observe(
+      opts.selectionColumnHeader.current,
+      (rect) => {
+        setCssVar(opts.root.current, VAR_SELECTION_COLUMN_WIDTH, `${rect.height}px`);
+      },
+      () => setCssVar(opts.root.current, VAR_SELECTION_COLUMN_WIDTH, "0px")
+    );
+    
+  }, [opts.selectionColumnHeader.current]);
 }

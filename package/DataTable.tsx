@@ -150,7 +150,7 @@ export function DataTable<T>({
   const headerRef = useRef<HTMLTableSectionElement>(null);
   const { ref: localTableRef, width: tableWidth, height: tableHeight } = useElementOuterSize<HTMLTableElement>();
   const footerRef = useRef<HTMLTableSectionElement>(null);
-  const { ref: selectionColumnHeaderRef, width: selectionColumnWidth } = useElementOuterSize<HTMLTableCellElement>();
+  const selectionColumnHeaderRef = useRef<HTMLTableCellElement>(null);
 
   const mergedTableRef = useMergedRef(localTableRef, tableRef);
   const mergedViewportRef = useMergedRef(localScrollViewportRef, scrollViewportRef);
@@ -160,7 +160,7 @@ export function DataTable<T>({
     table: localTableRef,
     header:headerRef,
     footer:footerRef,
-    selectionColumn:selectionColumnHeaderRef,
+    selectionColumnHeader:selectionColumnHeaderRef,
   });
   const [scrolledToTop, setScrolledToTop] = useState(true);
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
@@ -346,7 +346,6 @@ export function DataTable<T>({
               )}
               style={{
                 ...styles?.table,
-                '--mantine-datatable-selection-column-width': `${selectionColumnWidth}px`,
               }}
               data-striped={(recordsLength && striped) || undefined}
               data-highlight-on-hover={highlightOnHover || undefined}

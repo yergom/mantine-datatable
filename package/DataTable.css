@@ -38,7 +38,8 @@
 
   --mantine-datatable-header-height: 0px;
   --mantine-datatable-footer-height: 0px;
-  
+  --mantine-datatable-selection-column-width: 0px;
+
   position: relative;
   display: flex;
   flex-direction: column;

@@ -92,3 +92,4 @@ export function getRowCssVariables({
 
 export const VAR_HEADER_HEIGHT = '--mantine-datatable-header-height';
 export const VAR_FOOTER_HEIGHT = '--mantine-datatable-footer-height';
+export const VAR_SELECTION_COLUMN_WIDTH = '--mantine-datatable-selection-column-width';
