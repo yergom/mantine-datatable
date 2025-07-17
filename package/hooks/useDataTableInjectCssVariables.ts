@@ -1,12 +1,15 @@
-import { RefObject, useEffect } from 'react';
+import { RefObject, useEffect, useRef } from 'react';
 import { VAR_FOOTER_HEIGHT, VAR_HEADER_HEIGHT, VAR_SELECTION_COLUMN_WIDTH } from '../cssVariables';
+import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 
 interface UseDataTableInjectCssVariablesOpts {
   root: RefObject<HTMLDivElement | null>;
   table: RefObject<HTMLTableElement | null>;
+  scrollViewport: RefObject<HTMLElement | null>;
   header: RefObject<HTMLTableSectionElement | null>;
   footer: RefObject<HTMLTableSectionElement | null>;
   selectionColumnHeader: RefObject<HTMLTableCellElement | null>;
+  fetching: boolean | undefined;
 }
 
 /**
@@ -22,20 +25,24 @@ function setCssVar(root: HTMLDivElement | null, name: string, value: string) {
   root?.style.setProperty(name, value);
 }
 
+function getRect(entry: ResizeObserverEntry): Rect {
+  const boxSize = entry.borderBoxSize?.[0] || entry.contentBoxSize?.[0];
+  if (boxSize) {
+    return {
+      width: boxSize.inlineSize,
+      height: boxSize.blockSize,
+    };
+  } else {
+    return { width: entry.contentRect.width, height: entry.contentRect.height };
+  }
+}
+
 function observe(elem: HTMLElement | null, onChange: (rect: Rect) => unknown, onCancel: () => unknown) {
   if (elem) {
     const observer = new ResizeObserver((entries) => {
       const entry = entries[0];
       if (entry) {
-        const boxSize = entry.borderBoxSize?.[0] || entry.contentBoxSize?.[0];
-        if (boxSize) {
-          onChange({
-            width: boxSize.inlineSize,
-            height: boxSize.blockSize,
-          });
-        } else {
-          onChange(entry.contentRect);
-        }
+        onChange(getRect(entry));
       }
     });
     observer.observe(elem);
@@ -46,35 +53,107 @@ function observe(elem: HTMLElement | null, onChange: (rect: Rect) => unknown, on
   }
 }
 
-export function useDataTableInjectCssVariables(opts: UseDataTableInjectCssVariablesOpts) {
+type Pos = 'top' | 'bottom' | 'left' | 'right';
+
+export function useDataTableInjectCssVariables({
+  root,
+  table,
+  scrollViewport,
+  header,
+  footer,
+  selectionColumnHeader,
+  fetching,
+}: UseDataTableInjectCssVariablesOpts) {
+  const onScrollRef = useRef<() => void>(() => void 0);
   useEffect(() => {
     return observe(
-      opts.header.current,
+      header.current,
       (rect) => {
-        setCssVar(opts.root.current, VAR_HEADER_HEIGHT, `${rect.height}px`);
+        setCssVar(root.current, VAR_HEADER_HEIGHT, `${rect.height}px`);
       },
-      () => setCssVar(opts.root.current, VAR_HEADER_HEIGHT, "0px")
+      () => setCssVar(root.current, VAR_HEADER_HEIGHT, '0px')
     );
-  }, [opts.header.current]);
+  }, [header.current]);
 
   useEffect(() => {
     return observe(
-      opts.footer.current,
+      footer.current,
       (rect) => {
-        setCssVar(opts.root.current, VAR_FOOTER_HEIGHT, `${rect.height}px`);
+        setCssVar(root.current, VAR_FOOTER_HEIGHT, `${rect.height}px`);
       },
-      () => setCssVar(opts.root.current, VAR_FOOTER_HEIGHT, "0px")
+      () => setCssVar(root.current, VAR_FOOTER_HEIGHT, '0px')
     );
-  }, [opts.footer.current]);
+  }, [footer.current]);
 
   useEffect(() => {
     return observe(
-      opts.selectionColumnHeader.current,
+      selectionColumnHeader.current,
       (rect) => {
-        setCssVar(opts.root.current, VAR_SELECTION_COLUMN_WIDTH, `${rect.height}px`);
+        setCssVar(root.current, VAR_SELECTION_COLUMN_WIDTH, `${rect.height}px`);
       },
-      () => setCssVar(opts.root.current, VAR_SELECTION_COLUMN_WIDTH, "0px")
+      () => setCssVar(root.current, VAR_SELECTION_COLUMN_WIDTH, '0px')
     );
-    
-  }, [opts.selectionColumnHeader.current]);
+  }, [selectionColumnHeader.current]);
+
+  useIsomorphicLayoutEffect(() => {
+    const scrollPosition: Record<Pos, boolean> = {
+      top: false,
+      bottom: false,
+      left: false,
+      right: false,
+    };
+    let tableRect: Rect = { width: 0, height: 0 };
+    let scrollRect: Rect = { width: 0, height: 0 };
+
+    function setScrolledTo(pos: Pos, value: boolean) {
+      const old = scrollPosition[pos];
+      scrollPosition[pos] = value;
+      setCssVar(root.current, `--mantine-datatable-scroll-area-${pos}-shadow-opacity`, value ? '0' : '1');
+      return old;
+    }
+
+    function onScroll() {
+      const scrollTop = scrollViewport.current?.scrollTop ?? 0;
+      const scrollLeft = scrollViewport.current?.scrollLeft ?? 0;
+      if (fetching || tableRect.height <= scrollRect.height) {
+        setScrolledTo('top', true);
+        setScrolledTo('bottom', true);
+      } else {
+        const newScrolledToTop = scrollTop === 0;
+        const newScrolledToBottom = tableRect.height - scrollTop - scrollRect.height < 1;
+
+        const scrolledToTop = setScrolledTo('top', newScrolledToTop);
+        const scrolldeToBottom = setScrolledTo('bottom', newScrolledToBottom);
+        // if (newScrolledToTop && newScrolledToTop !== scrolledToTop) onScrollToTop?.();
+        // if (newScrolledToBottom && newScrolledToBottom !== scrolledToBottom) onScrollToBottom?.();
+      }
+      if (fetching || tableRect.width === scrollRect.width) {
+        setScrolledTo('left', true);
+        setScrolledTo('right', true);
+      } else {
+        const newScrolledToLeft = scrollLeft === 0;
+        const newScrolledToRight = tableRect.width - scrollLeft - scrollRect.width < 1;
+        const scrolledToLeft = setScrolledTo('left', newScrolledToLeft);
+        const scrolledToRight = setScrolledTo('right', newScrolledToRight);
+        // if (newScrolledToLeft && newScrolledToLeft !== scrolledToLeft) onScrollToLeft?.();
+        // if (newScrolledToRight && newScrolledToRight !== scrolledToRight) onScrollToRight?.();
+      }
+    }
+
+    onScrollRef.current = onScroll;
+
+    const observer = new ResizeObserver(([table, scrollViewport]) => {
+      tableRect = getRect(table);
+      scrollRect = getRect(scrollViewport);
+      onScroll();
+    });
+
+    observer.observe(table.current!);
+    observer.observe(scrollViewport.current!);
+    return () => {
+      observer.disconnect();
+    };
+  }, [fetching]);
+
+  return { processScrolling: onScrollRef.current };
 }

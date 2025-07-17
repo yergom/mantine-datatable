@@ -2,24 +2,16 @@ import { Box, ScrollArea, type ScrollAreaProps } from '@mantine/core';
 import clsx from 'clsx';
 
 type DataTableScrollAreaProps = React.PropsWithChildren<{
-  topShadowVisible: boolean;
-  leftShadowVisible: boolean;
   leftShadowBehind: boolean;
-  rightShadowVisible: boolean;
   rightShadowBehind: boolean | undefined;
-  bottomShadowVisible: boolean;
   onScrollPositionChange: ScrollAreaProps['onScrollPositionChange'];
   viewportRef: React.Ref<HTMLDivElement>;
   scrollAreaProps: Omit<ScrollAreaProps, 'classNames' | 'styles' | 'onScrollPositionChange'> | undefined;
 }>;
 
 export function DataTableScrollArea({
-  topShadowVisible,
-  leftShadowVisible,
   leftShadowBehind,
-  rightShadowVisible,
   rightShadowBehind,
-  bottomShadowVisible,
   onScrollPositionChange,
   children,
   viewportRef,
@@ -39,26 +31,20 @@ export function DataTableScrollArea({
     >
       {children}
       <Box
-        className={clsx('mantine-datatable-scroll-area-shadow', 'mantine-datatable-scroll-area-top-shadow', {
-          'mantine-datatable-scroll-area-shadow-visible': topShadowVisible,
-        })}
+        className={clsx('mantine-datatable-scroll-area-shadow', 'mantine-datatable-scroll-area-top-shadow')}
       />
       <div
         className={clsx('mantine-datatable-scroll-area-shadow', 'mantine-datatable-scroll-area-left-shadow', {
-          'mantine-datatable-scroll-area-shadow-visible': leftShadowVisible,
           'mantine-datatable-scroll-area-shadow-behind': leftShadowBehind,
         })}
       />
       <div
         className={clsx('mantine-datatable-scroll-area-shadow', 'mantine-datatable-scroll-area-right-shadow', {
-          'mantine-datatable-scroll-area-shadow-visible': rightShadowVisible,
           'mantine-datatable-scroll-area-shadow-behind': rightShadowBehind,
         })}
       />
       <Box
-        className={clsx('mantine-datatable-scroll-area-shadow', 'mantine-datatable-scroll-area-bottom-shadow', {
-          'mantine-datatable-scroll-area-shadow-visible': bottomShadowVisible,
-        })}
+        className={clsx('mantine-datatable-scroll-area-shadow', 'mantine-datatable-scroll-area-bottom-shadow')}
       />
     </ScrollArea>
   );

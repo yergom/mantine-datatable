@@ -15,9 +15,8 @@ import { getTableCssVariables } from './cssVariables';
 import {
   useDataTableColumns,
   useElementOuterSize,
-  useIsomorphicLayoutEffect,
   useLastSelectionChangeIndex,
-  useRowExpansion,
+  useRowExpansion
 } from './hooks';
 import { useDataTableInjectCssVariables } from './hooks/useDataTableInjectCssVariables';
 import type { DataTableProps } from './types';
@@ -132,12 +131,6 @@ export function DataTable<T>({
   tableWrapper,
   ...otherProps
 }: DataTableProps<T>) {
-  const {
-    ref: localScrollViewportRef,
-    width: scrollViewportWidth,
-    height: scrollViewportHeight,
-  } = useElementOuterSize<HTMLDivElement>();
-
   const effectiveColumns = useMemo(() => {
     return groups?.flatMap((group) => group.columns) ?? columns!;
   }, [columns, groups]);
@@ -149,18 +142,25 @@ export function DataTable<T>({
   const rootRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLTableSectionElement>(null);
   const { ref: localTableRef, width: tableWidth, height: tableHeight } = useElementOuterSize<HTMLTableElement>();
+  const {
+    ref: localScrollViewportRef,
+    width: scrollViewportWidth,
+    height: scrollViewportHeight,
+  } = useElementOuterSize<HTMLDivElement>();
   const footerRef = useRef<HTMLTableSectionElement>(null);
   const selectionColumnHeaderRef = useRef<HTMLTableCellElement>(null);
 
   const mergedTableRef = useMergedRef(localTableRef, tableRef);
   const mergedViewportRef = useMergedRef(localScrollViewportRef, scrollViewportRef);
 
-  useDataTableInjectCssVariables({
+  const { processScrolling } = useDataTableInjectCssVariables({
     root: rootRef,
     table: localTableRef,
-    header:headerRef,
-    footer:footerRef,
-    selectionColumnHeader:selectionColumnHeaderRef,
+    scrollViewport: localScrollViewportRef,
+    header: headerRef,
+    footer: footerRef,
+    selectionColumnHeader: selectionColumnHeaderRef,
+    fetching,
   });
   const [scrolledToTop, setScrolledToTop] = useState(true);
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
@@ -168,52 +168,6 @@ export function DataTable<T>({
   const [scrolledToRight, setScrolledToRight] = useState(true);
 
   const rowExpansionInfo = useRowExpansion<T>({ rowExpansion, records, idAccessor });
-
-  const processScrolling = useCallback(() => {
-    const scrollTop = localScrollViewportRef.current?.scrollTop ?? 0;
-    const scrollLeft = localScrollViewportRef.current?.scrollLeft ?? 0;
-
-    if (fetching || tableHeight <= scrollViewportHeight) {
-      setScrolledToTop(true);
-      setScrolledToBottom(true);
-    } else {
-      const newScrolledToTop = scrollTop === 0;
-      const newScrolledToBottom = tableHeight - scrollTop - scrollViewportHeight < 1;
-      setScrolledToTop(newScrolledToTop);
-      setScrolledToBottom(newScrolledToBottom);
-      if (newScrolledToTop && newScrolledToTop !== scrolledToTop) onScrollToTop?.();
-      if (newScrolledToBottom && newScrolledToBottom !== scrolledToBottom) onScrollToBottom?.();
-    }
-
-    if (fetching || tableWidth === scrollViewportWidth) {
-      setScrolledToLeft(true);
-      setScrolledToRight(true);
-    } else {
-      const newScrolledToLeft = scrollLeft === 0;
-      const newScrolledToRight = tableWidth - scrollLeft - scrollViewportWidth < 1;
-      setScrolledToLeft(newScrolledToLeft);
-      setScrolledToRight(newScrolledToRight);
-      if (newScrolledToLeft && newScrolledToLeft !== scrolledToLeft) onScrollToLeft?.();
-      if (newScrolledToRight && newScrolledToRight !== scrolledToRight) onScrollToRight?.();
-    }
-  }, [
-    fetching,
-    onScrollToBottom,
-    onScrollToLeft,
-    onScrollToRight,
-    onScrollToTop,
-    scrollViewportHeight,
-    localScrollViewportRef,
-    scrollViewportWidth,
-    scrolledToBottom,
-    scrolledToLeft,
-    scrolledToRight,
-    scrolledToTop,
-    tableHeight,
-    tableWidth,
-  ]);
-
-  useIsomorphicLayoutEffect(processScrolling, [processScrolling]);
 
   const debouncedProcessScrolling = useDebouncedCallback(processScrolling, 50);
 
@@ -315,12 +269,8 @@ export function DataTable<T>({
       >
         <DataTableScrollArea
           viewportRef={mergedViewportRef}
-          topShadowVisible={!scrolledToTop}
-          leftShadowVisible={!scrolledToLeft}
           leftShadowBehind={selectionColumnVisible || !!pinFirstColumn}
-          rightShadowVisible={!scrolledToRight}
           rightShadowBehind={pinLastColumn}
-          bottomShadowVisible={!scrolledToBottom}
           onScrollPositionChange={handleScrollPositionChange}
           scrollAreaProps={scrollAreaProps}
         >
@@ -504,11 +454,7 @@ export function DataTable<T>({
           type={loaderType}
           color={loaderColor}
         />
-        <DataTableEmptyState
-          icon={noRecordsIcon}
-          text={noRecordsText}
-          active={!fetching && !recordsLength}
-        >
+        <DataTableEmptyState icon={noRecordsIcon} text={noRecordsText} active={!fetching && !recordsLength}>
           {emptyState}
         </DataTableEmptyState>
       </Box>

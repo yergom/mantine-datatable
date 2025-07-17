@@ -39,6 +39,10 @@
   --mantine-datatable-header-height: 0px;
   --mantine-datatable-footer-height: 0px;
   --mantine-datatable-selection-column-width: 0px;
+  --mantine-datatable-scroll-area-top-shadow-opacity: 0;
+  --mantine-datatable-scroll-area-left-shadow-opacity: 0;
+  --mantine-datatable-scroll-area-bottom-shadow-opacity: 0;
+  --mantine-datatable-scroll-area-right-shadow-opacity: 0;
 
   position: relative;
   display: flex;
