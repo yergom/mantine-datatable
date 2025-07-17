@@ -18,12 +18,8 @@ type Rect = {
   height: number;
 };
 
-function addCssVar(root: HTMLDivElement | null, name: string, value: string) {
+function setCssVar(root: HTMLDivElement | null, name: string, value: string) {
   root?.style.setProperty(name, value);
-}
-
-function removeCssVar(root: HTMLDivElement | null, name: string) {
-  root?.style.removeProperty(name);
 }
 
 function observe(elem: HTMLElement | null, onChange: (rect: Rect) => unknown, onCancel: () => unknown) {
@@ -55,9 +51,9 @@ export function useDataTableInjectCssVariables(opts: UseDataTableInjectCssVariab
     return observe(
       opts.header.current,
       (rect) => {
-        addCssVar(opts.root.current, VAR_HEADER_HEIGHT, `${rect.height}px`);
+        setCssVar(opts.root.current, VAR_HEADER_HEIGHT, `${rect.height}px`);
       },
-      () => removeCssVar(opts.root.current, VAR_HEADER_HEIGHT)
+      () => setCssVar(opts.root.current, VAR_HEADER_HEIGHT, "0px")
     );
   }, [opts.header.current]);
 
@@ -65,9 +61,9 @@ export function useDataTableInjectCssVariables(opts: UseDataTableInjectCssVariab
     return observe(
       opts.footer.current,
       (rect) => {
-        addCssVar(opts.root.current, VAR_FOOTER_HEIGHT, `${rect.height}px`);
+        setCssVar(opts.root.current, VAR_FOOTER_HEIGHT, `${rect.height}px`);
       },
-      () => removeCssVar(opts.root.current, VAR_FOOTER_HEIGHT)
+      () => setCssVar(opts.root.current, VAR_FOOTER_HEIGHT, "0px")
     );
   }, [opts.footer.current]);
 }
