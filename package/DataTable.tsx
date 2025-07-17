@@ -1,7 +1,7 @@
 import { Box, Table, type MantineSize } from '@mantine/core';
 import { useDebouncedCallback, useMergedRef } from '@mantine/hooks';
 import clsx from 'clsx';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { DataTableColumnsProvider } from './DataTableDragToggleProvider';
 import { DataTableEmptyRow } from './DataTableEmptyRow';
 import { DataTableEmptyState } from './DataTableEmptyState';
@@ -19,6 +19,7 @@ import {
   useLastSelectionChangeIndex,
   useRowExpansion,
 } from './hooks';
+import { useDataTableInjectCssVariables } from './hooks/useDataTableInjectCssVariables';
 import type { DataTableProps } from './types';
 import { TEXT_SELECTION_DISABLED } from './utilityClasses';
 import { differenceBy, getRecordId, uniqBy } from './utils';
@@ -145,16 +146,22 @@ export function DataTable<T>({
     key: storeColumnsKey,
     columns: effectiveColumns,
   });
-
-  const { ref: headerRef, height: headerHeight } = useElementOuterSize<HTMLTableSectionElement>();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLTableSectionElement>(null);
   const { ref: localTableRef, width: tableWidth, height: tableHeight } = useElementOuterSize<HTMLTableElement>();
-  const { ref: footerRef, height: footerHeight } = useElementOuterSize<HTMLTableSectionElement>();
-  const { ref: paginationRef, height: paginationHeight } = useElementOuterSize<HTMLDivElement>();
+  const footerRef = useRef<HTMLTableSectionElement>(null);
   const { ref: selectionColumnHeaderRef, width: selectionColumnWidth } = useElementOuterSize<HTMLTableCellElement>();
 
   const mergedTableRef = useMergedRef(localTableRef, tableRef);
   const mergedViewportRef = useMergedRef(localScrollViewportRef, scrollViewportRef);
 
+  useDataTableInjectCssVariables({
+    root: rootRef,
+    table: localTableRef,
+    header:headerRef,
+    footer:footerRef,
+    selectionColumn:selectionColumnHeaderRef,
+  });
   const [scrolledToTop, setScrolledToTop] = useState(true);
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
   const [scrolledToLeft, setScrolledToLeft] = useState(true);
@@ -274,6 +281,7 @@ export function DataTable<T>({
   return (
     <DataTableColumnsProvider {...dragToggle}>
       <Box
+        ref={rootRef}
         {...marginProperties}
         className={clsx(
           'mantine-datatable',
@@ -313,8 +321,6 @@ export function DataTable<T>({
           rightShadowVisible={!scrolledToRight}
           rightShadowBehind={pinLastColumn}
           bottomShadowVisible={!scrolledToBottom}
-          headerHeight={headerHeight}
-          footerHeight={footerHeight}
           onScrollPositionChange={handleScrollPositionChange}
           scrollAreaProps={scrollAreaProps}
         >
@@ -467,7 +473,6 @@ export function DataTable<T>({
 
         {page && (
           <DataTablePagination
-            ref={paginationRef}
             className={classNames?.pagination}
             style={styles?.pagination}
             horizontalSpacing={horizontalSpacing}
@@ -493,8 +498,6 @@ export function DataTable<T>({
           />
         )}
         <DataTableLoader
-          pt={headerHeight}
-          pb={paginationHeight}
           fetching={fetching}
           backgroundBlur={loaderBackgroundBlur}
           customContent={customLoader}
@@ -503,8 +506,6 @@ export function DataTable<T>({
           color={loaderColor}
         />
         <DataTableEmptyState
-          pt={headerHeight}
-          pb={paginationHeight}
           icon={noRecordsIcon}
           text={noRecordsText}
           active={!fetching && !recordsLength}

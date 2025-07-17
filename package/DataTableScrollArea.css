@@ -32,6 +32,7 @@
   right: 0;
   height: calc(var(--mantine-spacing-xs) / 2);
   background: var(--mantine-datatable-shadow-background-top);
+  top: var(--mantine-datatable-header-height);
 }
 
 .mantine-datatable-scroll-area-left-shadow {
@@ -63,6 +64,7 @@
   right: 0;
   height: calc(var(--mantine-spacing-xs) / 2);
   background: var(--mantine-datatable-shadow-background-bottom);
+  bottom: var(--mantine-datatable-footer-height);
 }
 
 .mantine-datatable-scroll-area-shadow-visible {
