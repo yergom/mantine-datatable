@@ -12,7 +12,12 @@ import { DataTablePagination } from './DataTablePagination';
 import { DataTableRow } from './DataTableRow';
 import { DataTableScrollArea } from './DataTableScrollArea';
 import { getTableCssVariables } from './cssVariables';
-import { useDataTableColumns, useDataTableInjectCssVariables, useLastSelectionChangeIndex, useRowExpansion } from './hooks';
+import {
+  useDataTableColumns,
+  useDataTableInjectCssVariables,
+  useLastSelectionChangeIndex,
+  useRowExpansion,
+} from './hooks';
 import type { DataTableProps } from './types';
 import { TEXT_SELECTION_DISABLED } from './utilityClasses';
 import { differenceBy, getRecordId, uniqBy } from './utils';
