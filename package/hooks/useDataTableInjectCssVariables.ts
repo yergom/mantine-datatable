@@ -97,7 +97,7 @@ export function useDataTableInjectCssVariables({
     return observe(
       selectionColumnHeader.current,
       (rect) => {
-        setCssVar(root.current, VAR_SELECTION_COLUMN_WIDTH, `${rect.height}px`);
+        setCssVar(root.current, VAR_SELECTION_COLUMN_WIDTH, `${rect.width}px`);
       },
       () => setCssVar(root.current, VAR_SELECTION_COLUMN_WIDTH, '0px')
     );
