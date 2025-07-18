@@ -1,5 +1,5 @@
 import { Box, Table, type MantineSize } from '@mantine/core';
-import { useDebouncedCallback, useMergedRef } from '@mantine/hooks';
+import { useMergedRef } from '@mantine/hooks';
 import clsx from 'clsx';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { DataTableColumnsProvider } from './DataTableDragToggleProvider';
@@ -12,12 +12,7 @@ import { DataTablePagination } from './DataTablePagination';
 import { DataTableRow } from './DataTableRow';
 import { DataTableScrollArea } from './DataTableScrollArea';
 import { getTableCssVariables } from './cssVariables';
-import {
-  useDataTableColumns,
-  useElementOuterSize,
-  useLastSelectionChangeIndex,
-  useRowExpansion
-} from './hooks';
+import { useDataTableColumns, useElementOuterSize, useLastSelectionChangeIndex, useRowExpansion } from './hooks';
 import { useDataTableInjectCssVariables } from './hooks/useDataTableInjectCssVariables';
 import type { DataTableProps } from './types';
 import { TEXT_SELECTION_DISABLED } from './utilityClasses';
@@ -153,7 +148,7 @@ export function DataTable<T>({
   const mergedTableRef = useMergedRef(localTableRef, tableRef);
   const mergedViewportRef = useMergedRef(localScrollViewportRef, scrollViewportRef);
 
-  const { processScrolling } = useDataTableInjectCssVariables({
+  const {onScroll:handleScrollPositionChange} = useDataTableInjectCssVariables({
     root: rootRef,
     table: localTableRef,
     scrollViewport: localScrollViewportRef,
@@ -161,6 +156,13 @@ export function DataTable<T>({
     footer: footerRef,
     selectionColumnHeader: selectionColumnHeaderRef,
     fetching,
+    scrollCallbacks: {
+      onScroll,
+      onScrollToTop,
+      onScrollToBottom,
+      onScrollToLeft,
+      onScrollToRight,
+    },
   });
   const [scrolledToTop, setScrolledToTop] = useState(true);
   const [scrolledToBottom, setScrolledToBottom] = useState(true);
@@ -168,16 +170,6 @@ export function DataTable<T>({
   const [scrolledToRight, setScrolledToRight] = useState(true);
 
   const rowExpansionInfo = useRowExpansion<T>({ rowExpansion, records, idAccessor });
-
-  const debouncedProcessScrolling = useDebouncedCallback(processScrolling, 50);
-
-  const handleScrollPositionChange = useCallback(
-    (e: { x: number; y: number }) => {
-      onScroll?.(e);
-      debouncedProcessScrolling();
-    },
-    [debouncedProcessScrolling, onScroll]
-  );
 
   const handlePageChange = useCallback(
     (page: number) => {

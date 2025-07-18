@@ -1,6 +1,8 @@
 import { RefObject, useEffect, useRef } from 'react';
 import { VAR_FOOTER_HEIGHT, VAR_HEADER_HEIGHT, VAR_SELECTION_COLUMN_WIDTH } from '../cssVariables';
+import { DataTableScrollProps } from '../types/DataTableScrollProps';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
+import { useStableValue } from './useStableValue';
 
 interface UseDataTableInjectCssVariablesOpts {
   root: RefObject<HTMLDivElement | null>;
@@ -9,8 +11,11 @@ interface UseDataTableInjectCssVariablesOpts {
   header: RefObject<HTMLTableSectionElement | null>;
   footer: RefObject<HTMLTableSectionElement | null>;
   selectionColumnHeader: RefObject<HTMLTableCellElement | null>;
+  scrollCallbacks: DataTableScrollProps;
   fetching: boolean | undefined;
 }
+
+type OnScroll = NonNullable<DataTableScrollProps["onScroll"]>;
 
 /**
  * The idea is that we are going to inject CSS variables into the root, so that they can be used in css stylings for the different table section,
@@ -63,8 +68,11 @@ export function useDataTableInjectCssVariables({
   footer,
   selectionColumnHeader,
   fetching,
+  scrollCallbacks,
 }: UseDataTableInjectCssVariablesOpts) {
-  const onScrollRef = useRef<() => void>(() => void 0);
+  const stableScrollCallbacks = useStableValue(scrollCallbacks);
+  const onScrollRef = useRef<OnScroll>(() => void 0);
+
   useEffect(() => {
     return observe(
       header.current,
@@ -96,6 +104,9 @@ export function useDataTableInjectCssVariables({
   }, [selectionColumnHeader.current]);
 
   useIsomorphicLayoutEffect(() => {
+    if (typeof window === undefined) {
+      return;
+    }
     const scrollPosition: Record<Pos, boolean> = {
       top: false,
       bottom: false,
@@ -112,7 +123,9 @@ export function useDataTableInjectCssVariables({
       return old;
     }
 
-    function onScroll() {
+
+    function processScrolling() {
+      const callbacks = stableScrollCallbacks.current;
       const scrollTop = scrollViewport.current?.scrollTop ?? 0;
       const scrollLeft = scrollViewport.current?.scrollLeft ?? 0;
       if (fetching || tableRect.height <= scrollRect.height) {
@@ -123,9 +136,9 @@ export function useDataTableInjectCssVariables({
         const newScrolledToBottom = tableRect.height - scrollTop - scrollRect.height < 1;
 
         const scrolledToTop = setScrolledTo('top', newScrolledToTop);
-        const scrolldeToBottom = setScrolledTo('bottom', newScrolledToBottom);
-        // if (newScrolledToTop && newScrolledToTop !== scrolledToTop) onScrollToTop?.();
-        // if (newScrolledToBottom && newScrolledToBottom !== scrolledToBottom) onScrollToBottom?.();
+        const scrolledToBottom = setScrolledTo('bottom', newScrolledToBottom);
+        if (newScrolledToTop && newScrolledToTop !== scrolledToTop) callbacks.onScrollToTop?.();
+        if (newScrolledToBottom && newScrolledToBottom !== scrolledToBottom) callbacks.onScrollToBottom?.();
       }
       if (fetching || tableRect.width === scrollRect.width) {
         setScrolledTo('left', true);
@@ -135,9 +148,14 @@ export function useDataTableInjectCssVariables({
         const newScrolledToRight = tableRect.width - scrollLeft - scrollRect.width < 1;
         const scrolledToLeft = setScrolledTo('left', newScrolledToLeft);
         const scrolledToRight = setScrolledTo('right', newScrolledToRight);
-        // if (newScrolledToLeft && newScrolledToLeft !== scrolledToLeft) onScrollToLeft?.();
-        // if (newScrolledToRight && newScrolledToRight !== scrolledToRight) onScrollToRight?.();
+        if (newScrolledToLeft && newScrolledToLeft !== scrolledToLeft) callbacks.onScrollToLeft?.();
+        if (newScrolledToRight && newScrolledToRight !== scrolledToRight) callbacks.onScrollToRight?.();
       }
+    }
+
+    const onScroll: OnScroll = (e)=>{
+      stableScrollCallbacks.current.onScroll?.(e);
+      processScrolling()
     }
 
     onScrollRef.current = onScroll;
@@ -145,15 +163,16 @@ export function useDataTableInjectCssVariables({
     const observer = new ResizeObserver(([table, scrollViewport]) => {
       tableRect = getRect(table);
       scrollRect = getRect(scrollViewport);
-      onScroll();
+      processScrolling();
     });
 
     observer.observe(table.current!);
     observer.observe(scrollViewport.current!);
+
     return () => {
       observer.disconnect();
     };
   }, [fetching]);
 
-  return { processScrolling: onScrollRef.current };
+  return { onScroll: onScrollRef.current };
 }
