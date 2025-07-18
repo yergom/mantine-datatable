@@ -155,7 +155,6 @@ export function DataTable<T>({
     header: headerRef,
     footer: footerRef,
     selectionColumnHeader: selectionColumnHeaderRef,
-    fetching,
     scrollCallbacks: {
       onScroll,
       onScrollToTop,
@@ -163,6 +162,8 @@ export function DataTable<T>({
       onScrollToLeft,
       onScrollToRight,
     },
+    fetching,
+    withRowBorders:otherProps.withRowBorders
   });
 
   const rowExpansionInfo = useRowExpansion<T>({ rowExpansion, records, idAccessor });
@@ -272,8 +273,6 @@ export function DataTable<T>({
                   [TEXT_SELECTION_DISABLED]: textSelectionDisabled,
                   'mantine-datatable-vertical-align-top': verticalAlign === 'top',
                   'mantine-datatable-vertical-align-bottom': verticalAlign === 'bottom',
-                  'mantine-datatable-last-row-border-bottom-visible':
-                    otherProps.withRowBorders && tableHeight < scrollViewportHeight,
                   'mantine-datatable-pin-last-column': pinLastColumn,
                   'mantine-datatable-selection-column-visible': selectionColumnVisible,
                   'mantine-datatable-pin-first-column': pinFirstColumn,

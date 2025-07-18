@@ -45,6 +45,7 @@
   --mantine-datatable-right-shadow-opacity: 0;
   --mantine-datatable-footer-position: sticky;
   --mantine-datatable-footer-bottom:0px;
+  --mantine-datatable-last-row-border-bottom: unset;
 
   position: relative;
   display: flex;
@@ -89,6 +90,10 @@
 
   tbody tr:last-of-type {
     border-bottom: 0;
+  }
+
+  tr:last-of-type:not(.mantine-datatable-empty-row) td {
+    border-bottom: var(--mantine-datatable-last-row-border-bottom);
   }
 }
 

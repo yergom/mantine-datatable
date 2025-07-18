@@ -1,3 +1,4 @@
+import { rem } from '@mantine/core';
 import { RefObject, useEffect, useRef } from 'react';
 import { VAR_FOOTER_HEIGHT, VAR_HEADER_HEIGHT, VAR_SELECTION_COLUMN_WIDTH } from '../cssVariables';
 import { DataTableScrollProps } from '../types/DataTableScrollProps';
@@ -13,9 +14,10 @@ interface UseDataTableInjectCssVariablesOpts {
   selectionColumnHeader: RefObject<HTMLTableCellElement | null>;
   scrollCallbacks: DataTableScrollProps;
   fetching: boolean | undefined;
+  withRowBorders: boolean | undefined;
 }
 
-type OnScroll = NonNullable<DataTableScrollProps["onScroll"]>;
+type OnScroll = NonNullable<DataTableScrollProps['onScroll']>;
 
 /**
  * The idea is that we are going to inject CSS variables into the root, so that they can be used in css stylings for the different table section,
@@ -67,10 +69,14 @@ export function useDataTableInjectCssVariables({
   header,
   footer,
   selectionColumnHeader,
-  fetching,
   scrollCallbacks,
+  fetching,
+  withRowBorders,
 }: UseDataTableInjectCssVariablesOpts) {
+  const stableDependencies = useStableValue({ fetching, withRowBorders });
   const stableScrollCallbacks = useStableValue(scrollCallbacks);
+  const processScrollingRef = useRef<() => void>(() => void 0);
+  const processLastRowBottomBorderRef = useRef<() => void>(() => void 0);
   const onScrollRef = useRef<OnScroll>(() => void 0);
 
   useEffect(() => {
@@ -123,18 +129,28 @@ export function useDataTableInjectCssVariables({
       return old;
     }
 
-    function processFooterPosition(){
+    function processFooterPosition() {
       const diff = tableRect.height - scrollRect.height;
       const relative = diff < 0;
-      setCssVar(root.current, "--mantine-datatable-footer-position", relative? "relative" : "sticky");
-      setCssVar(root.current, "--mantine-datatable-footer-bottom", relative? `${diff}px` : "0px");
+      setCssVar(root.current, '--mantine-datatable-footer-position', relative ? 'relative' : 'sticky');
+      setCssVar(root.current, '--mantine-datatable-footer-bottom', relative ? `${diff}px` : '0px');
     }
+
+    function processLastRowBottomBorder() {
+      if(stableDependencies.current.withRowBorders && tableRect.height < scrollRect.height){
+        setCssVar(root.current, '--mantine-datatable-last-row-border-bottom', `${rem("1px")} solid var(--mantine-datatable-border-color)`);
+      }
+      else{
+        setCssVar(root.current, '--mantine-datatable-last-row-border-bottom', "unset");
+      }
+    }
+    processLastRowBottomBorderRef.current = processLastRowBottomBorder;
 
     function processScrolling() {
       const callbacks = stableScrollCallbacks.current;
       const scrollTop = scrollViewport.current?.scrollTop ?? 0;
       const scrollLeft = scrollViewport.current?.scrollLeft ?? 0;
-      if (fetching || tableRect.height <= scrollRect.height) {
+      if (stableDependencies.current.fetching || tableRect.height <= scrollRect.height) {
         setScrolledTo('top', true);
         setScrolledTo('bottom', true);
       } else {
@@ -146,7 +162,7 @@ export function useDataTableInjectCssVariables({
         if (newScrolledToTop && newScrolledToTop !== scrolledToTop) callbacks.onScrollToTop?.();
         if (newScrolledToBottom && newScrolledToBottom !== scrolledToBottom) callbacks.onScrollToBottom?.();
       }
-      if (fetching || tableRect.width === scrollRect.width) {
+      if (stableDependencies.current.fetching || tableRect.width === scrollRect.width) {
         setScrolledTo('left', true);
         setScrolledTo('right', true);
       } else {
@@ -158,20 +174,21 @@ export function useDataTableInjectCssVariables({
         if (newScrolledToRight && newScrolledToRight !== scrolledToRight) callbacks.onScrollToRight?.();
       }
     }
+    processScrollingRef.current = processScrolling;
 
-    const onScroll: OnScroll = (e)=>{
+    const onScroll: OnScroll = (e) => {
       stableScrollCallbacks.current.onScroll?.(e);
-      processScrolling()
-    }
-
+      processScrolling();
+    };
     onScrollRef.current = onScroll;
 
     const observer = new ResizeObserver(([table, scrollViewport]) => {
-      if(table && scrollViewport){
+      if (table && scrollViewport) {
         tableRect = getRect(table);
         scrollRect = getRect(scrollViewport);
         processScrolling();
         processFooterPosition();
+        processLastRowBottomBorder();
       }
     });
 
@@ -181,7 +198,15 @@ export function useDataTableInjectCssVariables({
     return () => {
       observer.disconnect();
     };
+  }, []);
+
+  useIsomorphicLayoutEffect(() => {
+    processScrollingRef.current();
   }, [fetching]);
+
+  useIsomorphicLayoutEffect(() => {
+    processLastRowBottomBorderRef.current();
+  }, [withRowBorders]);
 
   return { onScroll: onScrollRef.current };
 }

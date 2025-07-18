@@ -17,6 +17,7 @@ export function ColumnFooterExample({height}:{height?:number}) {
       striped
       records={records}
       height={height}
+      withRowBorders
       columns={[
         {
           accessor: 'name',
