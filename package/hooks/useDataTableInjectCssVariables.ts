@@ -119,7 +119,7 @@ export function useDataTableInjectCssVariables({
     function setScrolledTo(pos: Pos, value: boolean) {
       const old = scrollPosition[pos];
       scrollPosition[pos] = value;
-      setCssVar(root.current, `--mantine-datatable-scroll-area-${pos}-shadow-opacity`, value ? '0' : '1');
+      setCssVar(root.current, `--mantine-datatable-${pos}-shadow-opacity`, value ? '0' : '1');
       return old;
     }
 

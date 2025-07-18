@@ -1,7 +1,7 @@
 import { Box, Table, type MantineSize } from '@mantine/core';
 import { useMergedRef } from '@mantine/hooks';
 import clsx from 'clsx';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { DataTableColumnsProvider } from './DataTableDragToggleProvider';
 import { DataTableEmptyRow } from './DataTableEmptyRow';
 import { DataTableEmptyState } from './DataTableEmptyState';
@@ -148,7 +148,7 @@ export function DataTable<T>({
   const mergedTableRef = useMergedRef(localTableRef, tableRef);
   const mergedViewportRef = useMergedRef(localScrollViewportRef, scrollViewportRef);
 
-  const {onScroll:handleScrollPositionChange} = useDataTableInjectCssVariables({
+  const { onScroll: handleScrollPositionChange } = useDataTableInjectCssVariables({
     root: rootRef,
     table: localTableRef,
     scrollViewport: localScrollViewportRef,
@@ -164,10 +164,6 @@ export function DataTable<T>({
       onScrollToRight,
     },
   });
-  const [scrolledToTop, setScrolledToTop] = useState(true);
-  const [scrolledToBottom, setScrolledToBottom] = useState(true);
-  const [scrolledToLeft, setScrolledToLeft] = useState(true);
-  const [scrolledToRight, setScrolledToRight] = useState(true);
 
   const rowExpansionInfo = useRowExpansion<T>({ rowExpansion, records, idAccessor });
 
@@ -212,7 +208,7 @@ export function DataTable<T>({
   ]);
 
   const { lastSelectionChangeIndex, setLastSelectionChangeIndex } = useLastSelectionChangeIndex(recordIds);
-  const selectorCellShadowVisible = selectionColumnVisible && !scrolledToLeft && !pinFirstColumn;
+  const selectorCellShadowVisible = selectionColumnVisible && !pinFirstColumn;
 
   const marginProperties = { m, my, mx, mt, mb, ml, mr };
 
@@ -279,10 +275,8 @@ export function DataTable<T>({
                   'mantine-datatable-last-row-border-bottom-visible':
                     otherProps.withRowBorders && tableHeight < scrollViewportHeight,
                   'mantine-datatable-pin-last-column': pinLastColumn,
-                  'mantine-datatable-pin-last-column-scrolled': !scrolledToRight && pinLastColumn,
                   'mantine-datatable-selection-column-visible': selectionColumnVisible,
                   'mantine-datatable-pin-first-column': pinFirstColumn,
-                  'mantine-datatable-pin-first-column-scrolled': !scrolledToLeft && pinFirstColumn,
                 },
                 classNames?.table
               )}

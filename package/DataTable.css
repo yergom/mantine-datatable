@@ -39,10 +39,10 @@
   --mantine-datatable-header-height: 0px;
   --mantine-datatable-footer-height: 0px;
   --mantine-datatable-selection-column-width: 0px;
-  --mantine-datatable-scroll-area-top-shadow-opacity: 0;
-  --mantine-datatable-scroll-area-left-shadow-opacity: 0;
-  --mantine-datatable-scroll-area-bottom-shadow-opacity: 0;
-  --mantine-datatable-scroll-area-right-shadow-opacity: 0;
+  --mantine-datatable-top-shadow-opacity: 0;
+  --mantine-datatable-left-shadow-opacity: 0;
+  --mantine-datatable-bottom-shadow-opacity: 0;
+  --mantine-datatable-right-shadow-opacity: 0;
 
   position: relative;
   display: flex;
@@ -124,7 +124,7 @@
       width: var(--mantine-spacing-xs);
       background: var(--mantine-datatable-shadow-background-right);
       pointer-events: none;
-      opacity: 0;
+      opacity: var(--mantine-datatable-right-shadow-opacity);
       transition: opacity 0.2s;
     }
   }
@@ -153,15 +153,6 @@
       background: var(--mantine-primary-color-light);
     }
   }
-
-  &-scrolled {
-    th:last-of-type,
-    td:not(.mantine-datatable-row-expansion-cell):last-of-type {
-      &::after {
-        opacity: 1;
-      }
-    }
-  }
 }
 
 .mantine-datatable-pin-first-column {
@@ -185,7 +176,7 @@
       width: var(--mantine-spacing-xs);
       background: var(--mantine-datatable-shadow-background-left);
       pointer-events: none;
-      opacity: 0;
+      opacity: var(--mantine-datatable-left-shadow-opacity);
       transition: opacity 0.2s;
     }
   }
@@ -230,18 +221,6 @@
       left: 0;
       right: 0;
       background: var(--mantine-primary-color-light);
-    }
-  }
-
-  &-scrolled:not(.mantine-datatable-selection-column-visible) th:first-of-type,
-  &-scrolled:not(.mantine-datatable-selection-column-visible)
-    td:not(.mantine-datatable-row-expansion-cell):first-of-type,
-  &-scrolled.mantine-datatable-selection-column-visible th:first-of-type,
-  &-scrolled.mantine-datatable-selection-column-visible tr:not(:nth-of-type(2)) th:nth-of-type(2),
-  &-scrolled.mantine-datatable-selection-column-visible th.mantine-datatable-column-group-header-cell:nth-of-type(2),
-  &-scrolled.mantine-datatable-selection-column-visible td:not(.mantine-datatable-row-expansion-cell):nth-of-type(2) {
-    &::after {
-      opacity: 1;
     }
   }
 }

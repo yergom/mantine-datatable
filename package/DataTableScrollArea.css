@@ -32,7 +32,7 @@
   height: calc(var(--mantine-spacing-xs) / 2);
   background: var(--mantine-datatable-shadow-background-top);
   top: var(--mantine-datatable-header-height);
-  opacity: var(--mantine-datatable-scroll-area-top-shadow-opacity);
+  opacity: var(--mantine-datatable-top-shadow-opacity);
 }
 
 .mantine-datatable-scroll-area-left-shadow {
@@ -42,7 +42,7 @@
   bottom: 0;
   width: var(--mantine-spacing-xs);
   background: var(--mantine-datatable-shadow-background-left);
-  opacity: var(--mantine-datatable-scroll-area-left-shadow-opacity);
+  opacity: var(--mantine-datatable-left-shadow-opacity);
 }
 
 .mantine-datatable-scroll-area-right-shadow {
@@ -52,7 +52,7 @@
   right: 0;
   width: calc(var(--mantine-spacing-xs) / 2);
   background: var(--mantine-datatable-shadow-background-right);
-  opacity: var(--mantine-datatable-scroll-area-right-shadow-opacity);
+  opacity: var(--mantine-datatable-right-shadow-opacity);
 }
 
 /* For horizontal scrolling and expanded rows */
@@ -67,9 +67,5 @@
   height: calc(var(--mantine-spacing-xs) / 2);
   background: var(--mantine-datatable-shadow-background-bottom);
   bottom: var(--mantine-datatable-footer-height);
-  opacity: var(--mantine-datatable-scroll-area-bottom-shadow-opacity);
-}
-
-.mantine-datatable-scroll-area-shadow-visible {
-  opacity: 1;
+  opacity: var(--mantine-datatable-bottom-shadow-opacity);
 }
