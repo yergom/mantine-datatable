@@ -17,10 +17,6 @@ interface UseDataTableInjectCssVariablesOpts {
 
 type OnScroll = NonNullable<DataTableScrollProps['onScroll']>;
 
-/**
- * The idea is that we are going to inject CSS variables into the root, so that they can be used in css stylings for the different table section,
- * without causing a reeact re-render
- */
 type Rect = {
   width: number;
   height: number;
