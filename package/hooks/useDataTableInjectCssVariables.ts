@@ -69,16 +69,16 @@ export function useDataTableInjectCssVariables({
     footer: useRef<HTMLTableSectionElement>(null),
     selectionColumnHeader: useRef<HTMLTableCellElement>(null),
   };
-  const {root, table, scrollViewport, header, footer, selectionColumnHeader} = refs;
+  const { root, table, scrollViewport, header, footer, selectionColumnHeader } = refs;
 
   const stableDependencies = useStableValue({ fetching, withRowBorders });
   const stableScrollCallbacks = useStableValue(scrollCallbacks);
   const processScrollingRef = useRef<() => void>(() => void 0);
   const processLastRowBottomBorderRef = useRef<() => void>(() => void 0);
-  const onScroll = useCallback<OnScroll>((ev)=>{
+  const onScroll = useCallback<OnScroll>((ev) => {
     stableScrollCallbacks.current.onScroll?.(ev);
     processScrollingRef.current();
-  },[]);
+  }, []);
 
   useEffect(() => {
     return observe(

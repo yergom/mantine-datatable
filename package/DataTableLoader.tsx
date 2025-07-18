@@ -10,14 +10,7 @@ type DataTableLoaderProps = {
   color: MantineColor | undefined;
 };
 
-export function DataTableLoader({
-  fetching,
-  customContent,
-  backgroundBlur,
-  size,
-  type,
-  color,
-}: DataTableLoaderProps) {
+export function DataTableLoader({ fetching, customContent, backgroundBlur, size, type, color }: DataTableLoaderProps) {
   return (
     <Center
       className={clsx('mantine-datatable-loader', { 'mantine-datatable-loader-fetching': fetching })}

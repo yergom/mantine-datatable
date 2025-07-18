@@ -30,9 +30,7 @@ export function DataTableScrollArea({
       onScrollPositionChange={onScrollPositionChange}
     >
       {children}
-      <Box
-        className={clsx('mantine-datatable-scroll-area-shadow', 'mantine-datatable-scroll-area-top-shadow')}
-      />
+      <Box className={clsx('mantine-datatable-scroll-area-shadow', 'mantine-datatable-scroll-area-top-shadow')} />
       <div
         className={clsx('mantine-datatable-scroll-area-shadow', 'mantine-datatable-scroll-area-left-shadow', {
           'mantine-datatable-scroll-area-shadow-behind': leftShadowBehind,
@@ -43,9 +41,7 @@ export function DataTableScrollArea({
           'mantine-datatable-scroll-area-shadow-behind': rightShadowBehind,
         })}
       />
-      <Box
-        className={clsx('mantine-datatable-scroll-area-shadow', 'mantine-datatable-scroll-area-bottom-shadow')}
-      />
+      <Box className={clsx('mantine-datatable-scroll-area-shadow', 'mantine-datatable-scroll-area-bottom-shadow')} />
     </ScrollArea>
   );
 }

@@ -134,7 +134,7 @@ export function DataTable<T>({
     key: storeColumnsKey,
     columns: effectiveColumns,
   });
-  
+
   const { refs, onScroll: handleScrollPositionChange } = useDataTableInjectCssVariables({
     scrollCallbacks: {
       onScroll,
@@ -144,10 +144,10 @@ export function DataTable<T>({
       onScrollToRight,
     },
     fetching,
-    withRowBorders:otherProps.withRowBorders
+    withRowBorders: otherProps.withRowBorders,
   });
   console.log(handleScrollPositionChange);
- 
+
   const mergedTableRef = useMergedRef(refs.table, tableRef);
   const mergedViewportRef = useMergedRef(refs.scrollViewport, scrollViewportRef);
 

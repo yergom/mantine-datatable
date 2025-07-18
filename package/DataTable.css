@@ -44,7 +44,7 @@
   --mantine-datatable-bottom-shadow-opacity: 0;
   --mantine-datatable-right-shadow-opacity: 0;
   --mantine-datatable-footer-position: sticky;
-  --mantine-datatable-footer-bottom:0px;
+  --mantine-datatable-footer-bottom: 0px;
   --mantine-datatable-last-row-border-bottom: unset;
 
   position: relative;

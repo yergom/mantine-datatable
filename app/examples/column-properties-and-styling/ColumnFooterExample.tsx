@@ -8,7 +8,7 @@ import { employees } from '~/data';
 
 const records = employees.slice(0, 10);
 
-export function ColumnFooterExample({height}:{height?:number}) {
+export function ColumnFooterExample({ height }: { height?: number }) {
   return (
     // example-start
     <DataTable

@@ -24,11 +24,7 @@ export function DataTableFooter<T>({
   ref,
 }: DataTableFooterProps<T>) {
   return (
-    <TableTfoot
-      ref={ref}
-      className={clsx('mantine-datatable-footer', className)}
-      style={style}
-    >
+    <TableTfoot ref={ref} className={clsx('mantine-datatable-footer', className)} style={style}>
       <TableTr>
         {selectionVisible && <DataTableFooterSelectorPlaceholderCell shadowVisible={selectorCellShadowVisible} />}
         {columns.map(({ hidden, ...columnProps }) => {
