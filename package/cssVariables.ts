@@ -89,7 +89,3 @@ export function getRowCssVariables({
     '--mantine-datatable-row-background-color-dark': getColor(backgroundColor, theme, 'dark'),
   };
 }
-
-export const VAR_HEADER_HEIGHT = '--mantine-datatable-header-height';
-export const VAR_FOOTER_HEIGHT = '--mantine-datatable-footer-height';
-export const VAR_SELECTION_COLUMN_WIDTH = '--mantine-datatable-selection-column-width';

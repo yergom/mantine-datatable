@@ -1,9 +1,13 @@
 import { rem } from '@mantine/core';
 import { useCallback, useEffect, useRef } from 'react';
-import { VAR_FOOTER_HEIGHT, VAR_HEADER_HEIGHT, VAR_SELECTION_COLUMN_WIDTH } from '../cssVariables';
 import { DataTableScrollProps } from '../types/DataTableScrollProps';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 import { useStableValue } from './useStableValue';
+
+const VAR_HEADER_HEIGHT = '--mantine-datatable-header-height';
+const VAR_FOOTER_HEIGHT = '--mantine-datatable-footer-height';
+const VAR_SELECTION_COLUMN_WIDTH = '--mantine-datatable-selection-column-width';
+const VAR_LAST_ROW_BORDER_BOTTOM = '--mantine-datatable-last-row-border-bottom';
 
 interface UseDataTableInjectCssVariablesOpts {
   scrollCallbacks: DataTableScrollProps;
@@ -21,6 +25,8 @@ type Rect = {
   width: number;
   height: number;
 };
+
+type Pos = 'top' | 'bottom' | 'left' | 'right';
 
 function setCssVar(root: HTMLDivElement | null, name: string, value: string) {
   root?.style.setProperty(name, value);
@@ -53,8 +59,6 @@ function observe(elem: HTMLElement | null, onChange: (rect: Rect) => unknown, on
     };
   }
 }
-
-type Pos = 'top' | 'bottom' | 'left' | 'right';
 
 export function useDataTableInjectCssVariables({
   scrollCallbacks,
@@ -141,11 +145,11 @@ export function useDataTableInjectCssVariables({
       if (stableDependencies.current.withRowBorders && tableRect.height < scrollRect.height) {
         setCssVar(
           root.current,
-          '--mantine-datatable-last-row-border-bottom',
+          VAR_LAST_ROW_BORDER_BOTTOM,
           `${rem('1px')} solid var(--mantine-datatable-border-color)`
         );
       } else {
-        setCssVar(root.current, '--mantine-datatable-last-row-border-bottom', 'unset');
+        setCssVar(root.current, VAR_LAST_ROW_BORDER_BOTTOM, 'unset');
       }
     }
     processLastRowBottomBorderRef.current = processLastRowBottomBorder;
