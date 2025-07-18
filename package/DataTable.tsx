@@ -1,7 +1,7 @@
 import { Box, Table, type MantineSize } from '@mantine/core';
 import { useMergedRef } from '@mantine/hooks';
 import clsx from 'clsx';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
 import { DataTableColumnsProvider } from './DataTableDragToggleProvider';
 import { DataTableEmptyRow } from './DataTableEmptyRow';
 import { DataTableEmptyState } from './DataTableEmptyState';
@@ -12,7 +12,7 @@ import { DataTablePagination } from './DataTablePagination';
 import { DataTableRow } from './DataTableRow';
 import { DataTableScrollArea } from './DataTableScrollArea';
 import { getTableCssVariables } from './cssVariables';
-import { useDataTableColumns, useElementOuterSize, useLastSelectionChangeIndex, useRowExpansion } from './hooks';
+import { useDataTableColumns, useLastSelectionChangeIndex, useRowExpansion } from './hooks';
 import { useDataTableInjectCssVariables } from './hooks/useDataTableInjectCssVariables';
 import type { DataTableProps } from './types';
 import { TEXT_SELECTION_DISABLED } from './utilityClasses';
@@ -134,27 +134,8 @@ export function DataTable<T>({
     key: storeColumnsKey,
     columns: effectiveColumns,
   });
-  const rootRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLTableSectionElement>(null);
-  const { ref: localTableRef, width: tableWidth, height: tableHeight } = useElementOuterSize<HTMLTableElement>();
-  const {
-    ref: localScrollViewportRef,
-    width: scrollViewportWidth,
-    height: scrollViewportHeight,
-  } = useElementOuterSize<HTMLDivElement>();
-  const footerRef = useRef<HTMLTableSectionElement>(null);
-  const selectionColumnHeaderRef = useRef<HTMLTableCellElement>(null);
-
-  const mergedTableRef = useMergedRef(localTableRef, tableRef);
-  const mergedViewportRef = useMergedRef(localScrollViewportRef, scrollViewportRef);
-
-  const { onScroll: handleScrollPositionChange } = useDataTableInjectCssVariables({
-    root: rootRef,
-    table: localTableRef,
-    scrollViewport: localScrollViewportRef,
-    header: headerRef,
-    footer: footerRef,
-    selectionColumnHeader: selectionColumnHeaderRef,
+  
+  const { refs, onScroll: handleScrollPositionChange } = useDataTableInjectCssVariables({
     scrollCallbacks: {
       onScroll,
       onScrollToTop,
@@ -165,15 +146,19 @@ export function DataTable<T>({
     fetching,
     withRowBorders:otherProps.withRowBorders
   });
+  console.log(handleScrollPositionChange);
+ 
+  const mergedTableRef = useMergedRef(refs.table, tableRef);
+  const mergedViewportRef = useMergedRef(refs.scrollViewport, scrollViewportRef);
 
   const rowExpansionInfo = useRowExpansion<T>({ rowExpansion, records, idAccessor });
 
   const handlePageChange = useCallback(
     (page: number) => {
-      localScrollViewportRef.current?.scrollTo({ top: 0, left: 0 });
+      refs.scrollViewport.current?.scrollTo({ top: 0, left: 0 });
       onPageChange!(page);
     },
-    [onPageChange, localScrollViewportRef]
+    [onPageChange, refs.scrollViewport]
   );
 
   const recordsLength = records?.length;
@@ -224,7 +209,7 @@ export function DataTable<T>({
   return (
     <DataTableColumnsProvider {...dragToggle}>
       <Box
-        ref={rootRef}
+        ref={refs.root}
         {...marginProperties}
         className={clsx(
           'mantine-datatable',
@@ -289,8 +274,8 @@ export function DataTable<T>({
               {noHeader ? null : (
                 <DataTableColumnsProvider {...dragToggle}>
                   <DataTableHeader<T>
-                    ref={headerRef}
-                    selectionColumnHeaderRef={selectionColumnHeaderRef}
+                    ref={refs.header}
+                    selectionColumnHeaderRef={refs.selectionColumnHeader}
                     className={classNames?.header}
                     style={styles?.header}
                     columns={effectiveColumns}
@@ -391,7 +376,7 @@ export function DataTable<T>({
 
               {effectiveColumns.some(({ footer }) => footer) && (
                 <DataTableFooter<T>
-                  ref={footerRef}
+                  ref={refs.footer}
                   className={classNames?.footer}
                   style={styles?.footer}
                   columns={effectiveColumns}

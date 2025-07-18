@@ -1,17 +1,11 @@
 import { rem } from '@mantine/core';
-import { RefObject, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { VAR_FOOTER_HEIGHT, VAR_HEADER_HEIGHT, VAR_SELECTION_COLUMN_WIDTH } from '../cssVariables';
 import { DataTableScrollProps } from '../types/DataTableScrollProps';
 import { useIsomorphicLayoutEffect } from './useIsomorphicLayoutEffect';
 import { useStableValue } from './useStableValue';
 
 interface UseDataTableInjectCssVariablesOpts {
-  root: RefObject<HTMLDivElement | null>;
-  table: RefObject<HTMLTableElement | null>;
-  scrollViewport: RefObject<HTMLElement | null>;
-  header: RefObject<HTMLTableSectionElement | null>;
-  footer: RefObject<HTMLTableSectionElement | null>;
-  selectionColumnHeader: RefObject<HTMLTableCellElement | null>;
   scrollCallbacks: DataTableScrollProps;
   fetching: boolean | undefined;
   withRowBorders: boolean | undefined;
@@ -63,21 +57,28 @@ function observe(elem: HTMLElement | null, onChange: (rect: Rect) => unknown, on
 type Pos = 'top' | 'bottom' | 'left' | 'right';
 
 export function useDataTableInjectCssVariables({
-  root,
-  table,
-  scrollViewport,
-  header,
-  footer,
-  selectionColumnHeader,
   scrollCallbacks,
   fetching,
   withRowBorders,
 }: UseDataTableInjectCssVariablesOpts) {
+  const refs = {
+    root: useRef<HTMLDivElement>(null),
+    table: useRef<HTMLTableElement>(null),
+    scrollViewport: useRef<HTMLElement>(null),
+    header: useRef<HTMLTableSectionElement>(null),
+    footer: useRef<HTMLTableSectionElement>(null),
+    selectionColumnHeader: useRef<HTMLTableCellElement>(null),
+  };
+  const {root, table, scrollViewport, header, footer, selectionColumnHeader} = refs;
+
   const stableDependencies = useStableValue({ fetching, withRowBorders });
   const stableScrollCallbacks = useStableValue(scrollCallbacks);
   const processScrollingRef = useRef<() => void>(() => void 0);
   const processLastRowBottomBorderRef = useRef<() => void>(() => void 0);
-  const onScrollRef = useRef<OnScroll>(() => void 0);
+  const onScroll = useCallback<OnScroll>((ev)=>{
+    stableScrollCallbacks.current.onScroll?.(ev);
+    processScrollingRef.current();
+  },[]);
 
   useEffect(() => {
     return observe(
@@ -137,11 +138,14 @@ export function useDataTableInjectCssVariables({
     }
 
     function processLastRowBottomBorder() {
-      if(stableDependencies.current.withRowBorders && tableRect.height < scrollRect.height){
-        setCssVar(root.current, '--mantine-datatable-last-row-border-bottom', `${rem("1px")} solid var(--mantine-datatable-border-color)`);
-      }
-      else{
-        setCssVar(root.current, '--mantine-datatable-last-row-border-bottom', "unset");
+      if (stableDependencies.current.withRowBorders && tableRect.height < scrollRect.height) {
+        setCssVar(
+          root.current,
+          '--mantine-datatable-last-row-border-bottom',
+          `${rem('1px')} solid var(--mantine-datatable-border-color)`
+        );
+      } else {
+        setCssVar(root.current, '--mantine-datatable-last-row-border-bottom', 'unset');
       }
     }
     processLastRowBottomBorderRef.current = processLastRowBottomBorder;
@@ -176,12 +180,6 @@ export function useDataTableInjectCssVariables({
     }
     processScrollingRef.current = processScrolling;
 
-    const onScroll: OnScroll = (e) => {
-      stableScrollCallbacks.current.onScroll?.(e);
-      processScrolling();
-    };
-    onScrollRef.current = onScroll;
-
     const observer = new ResizeObserver(([table, scrollViewport]) => {
       if (table && scrollViewport) {
         tableRect = getRect(table);
@@ -208,5 +206,8 @@ export function useDataTableInjectCssVariables({
     processLastRowBottomBorderRef.current();
   }, [withRowBorders]);
 
-  return { onScroll: onScrollRef.current };
+  return {
+    refs,
+    onScroll,
+  };
 }
