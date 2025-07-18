@@ -11,7 +11,6 @@ const VAR_LAST_ROW_BORDER_BOTTOM = '--mantine-datatable-last-row-border-bottom';
 
 interface UseDataTableInjectCssVariablesOpts {
   scrollCallbacks: DataTableScrollProps;
-  fetching: boolean | undefined;
   withRowBorders: boolean | undefined;
 }
 
@@ -58,7 +57,6 @@ function observe(elem: HTMLElement | null, onChange: (rect: Rect) => unknown, on
 
 export function useDataTableInjectCssVariables({
   scrollCallbacks,
-  fetching,
   withRowBorders,
 }: UseDataTableInjectCssVariablesOpts) {
   const refs = {
@@ -71,7 +69,7 @@ export function useDataTableInjectCssVariables({
   };
   const { root, table, scrollViewport, header, footer, selectionColumnHeader } = refs;
 
-  const stableDependencies = useStableValue({ fetching, withRowBorders });
+  const stableDependencies = useStableValue({ withRowBorders });
   const stableScrollCallbacks = useStableValue(scrollCallbacks);
   const processScrollingRef = useRef<() => void>(() => void 0);
   const processLastRowBottomBorderRef = useRef<() => void>(() => void 0);
@@ -115,10 +113,10 @@ export function useDataTableInjectCssVariables({
       return;
     }
     const scrollPosition: Record<Pos, boolean> = {
-      top: false,
-      bottom: false,
-      left: false,
-      right: false,
+      top: true,
+      bottom: true,
+      left: true,
+      right: true,
     };
     let tableRect: Rect = { width: 0, height: 0 };
     let scrollRect: Rect = { width: 0, height: 0 };
@@ -154,40 +152,38 @@ export function useDataTableInjectCssVariables({
       const callbacks = stableScrollCallbacks.current;
       const scrollTop = scrollViewport.current?.scrollTop ?? 0;
       const scrollLeft = scrollViewport.current?.scrollLeft ?? 0;
-      if (stableDependencies.current.fetching || tableRect.height <= scrollRect.height) {
-        setScrolledTo('top', true);
-        setScrolledTo('bottom', true);
-      } else {
-        const newScrolledToTop = scrollTop === 0;
-        const newScrolledToBottom = tableRect.height - scrollTop - scrollRect.height < 1;
 
-        const scrolledToTop = setScrolledTo('top', newScrolledToTop);
-        const scrolledToBottom = setScrolledTo('bottom', newScrolledToBottom);
-        if (newScrolledToTop && newScrolledToTop !== scrolledToTop) callbacks.onScrollToTop?.();
-        if (newScrolledToBottom && newScrolledToBottom !== scrolledToBottom) callbacks.onScrollToBottom?.();
-      }
-      if (stableDependencies.current.fetching || tableRect.width === scrollRect.width) {
-        setScrolledTo('left', true);
-        setScrolledTo('right', true);
-      } else {
-        const newScrolledToLeft = scrollLeft === 0;
-        const newScrolledToRight = tableRect.width - scrollLeft - scrollRect.width < 1;
-        const scrolledToLeft = setScrolledTo('left', newScrolledToLeft);
-        const scrolledToRight = setScrolledTo('right', newScrolledToRight);
-        if (newScrolledToLeft && newScrolledToLeft !== scrolledToLeft) callbacks.onScrollToLeft?.();
-        if (newScrolledToRight && newScrolledToRight !== scrolledToRight) callbacks.onScrollToRight?.();
-      }
+      const newScrolledToTop = scrollTop === 0;
+      const newScrolledToBottom = tableRect.height - scrollTop - scrollRect.height < 1;
+      const scrolledToTop = setScrolledTo('top', newScrolledToTop);
+      const scrolledToBottom = setScrolledTo('bottom', newScrolledToBottom);
+      if (newScrolledToTop && newScrolledToTop !== scrolledToTop) callbacks.onScrollToTop?.();
+      if (newScrolledToBottom && newScrolledToBottom !== scrolledToBottom) callbacks.onScrollToBottom?.();
+
+      const newScrolledToLeft = scrollLeft === 0;
+      const newScrolledToRight = tableRect.width - scrollLeft - scrollRect.width < 1;
+      const scrolledToLeft = setScrolledTo('left', newScrolledToLeft);
+      const scrolledToRight = setScrolledTo('right', newScrolledToRight);
+      if (newScrolledToLeft && newScrolledToLeft !== scrolledToLeft) callbacks.onScrollToLeft?.();
+      if (newScrolledToRight && newScrolledToRight !== scrolledToRight) callbacks.onScrollToRight?.();
     }
     processScrollingRef.current = processScrolling;
-
-    const observer = new ResizeObserver(([table, scrollViewport]) => {
-      if (table && scrollViewport) {
-        tableRect = getRect(table);
-        scrollRect = getRect(scrollViewport);
-        processScrolling();
-        processFooterPosition();
-        processLastRowBottomBorder();
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        switch (entry.target.tagName) {
+          case 'TABLE': {
+            tableRect = getRect(entry);
+            break;
+          }
+          case 'DIV': {
+            scrollRect = getRect(entry);
+            break;
+          }
+        }
       }
+      processScrolling();
+      processFooterPosition();
+      processLastRowBottomBorder();
     });
 
     observer.observe(table.current!);
@@ -197,10 +193,6 @@ export function useDataTableInjectCssVariables({
       observer.disconnect();
     };
   }, []);
-
-  useIsomorphicLayoutEffect(() => {
-    processScrollingRef.current();
-  }, [fetching]);
 
   useIsomorphicLayoutEffect(() => {
     processLastRowBottomBorderRef.current();

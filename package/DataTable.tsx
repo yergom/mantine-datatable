@@ -143,10 +143,8 @@ export function DataTable<T>({
       onScrollToLeft,
       onScrollToRight,
     },
-    fetching,
     withRowBorders: otherProps.withRowBorders,
   });
-  console.log(handleScrollPositionChange);
 
   const mergedTableRef = useMergedRef(refs.table, tableRef);
   const mergedViewportRef = useMergedRef(refs.scrollViewport, scrollViewportRef);
