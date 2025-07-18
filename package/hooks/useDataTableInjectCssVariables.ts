@@ -123,6 +123,12 @@ export function useDataTableInjectCssVariables({
       return old;
     }
 
+    function processFooterPosition(){
+      const diff = tableRect.height - scrollRect.height;
+      const relative = diff < 0;
+      setCssVar(root.current, "--mantine-datatable-footer-position", relative? "relative" : "sticky");
+      setCssVar(root.current, "--mantine-datatable-footer-bottom", relative? `${diff}px` : "0px");
+    }
 
     function processScrolling() {
       const callbacks = stableScrollCallbacks.current;
@@ -161,9 +167,12 @@ export function useDataTableInjectCssVariables({
     onScrollRef.current = onScroll;
 
     const observer = new ResizeObserver(([table, scrollViewport]) => {
-      tableRect = getRect(table);
-      scrollRect = getRect(scrollViewport);
-      processScrolling();
+      if(table && scrollViewport){
+        tableRect = getRect(table);
+        scrollRect = getRect(scrollViewport);
+        processScrolling();
+        processFooterPosition();
+      }
     });
 
     observer.observe(table.current!);

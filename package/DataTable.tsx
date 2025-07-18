@@ -399,7 +399,6 @@ export function DataTable<T>({
                   defaultColumnProps={defaultColumnProps}
                   selectionVisible={selectionColumnVisible}
                   selectorCellShadowVisible={selectorCellShadowVisible}
-                  scrollDiff={tableHeight - scrollViewportHeight}
                 />
               )}
             </Table>
